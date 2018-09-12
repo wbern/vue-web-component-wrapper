@@ -131,8 +131,15 @@ export default function wrap (Vue, Component) {
       return this._wrapper.$refs.inner
     }
 
-    connectedCallback () {
+    async connectedCallback () {
       const wrapper = this._wrapper
+
+      // TODO: Vue's router will be instantiated immediately, before the router
+      // in `mover-app` has finished transitioning URLs, making the Vue router
+      // resolve the wrong URL. Wait one micro-task to allow `mover-app`'s
+      // router to finish transitioning.
+      await Promise.resolve()
+
       if (!wrapper._isMounted) {
         // initialize attributes
         const syncInitialAttributes = () => {

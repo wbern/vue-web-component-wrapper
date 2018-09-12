@@ -110,6 +110,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -264,39 +266,64 @@ function wrap(Vue, Component) {
 
     _createClass(CustomElement, [{
       key: 'connectedCallback',
-      value: function connectedCallback() {
-        var _this4 = this;
+      value: function () {
+        var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+          var _this4 = this;
 
-        var wrapper = this._wrapper;
-        if (!wrapper._isMounted) {
-          // initialize attributes
-          var syncInitialAttributes = function syncInitialAttributes() {
-            wrapper.props = getInitialProps(camelizedPropsList);
-            hyphenatedPropsList.forEach(function (key) {
-              syncAttribute(_this4, key);
-            });
-          };
+          var wrapper, syncInitialAttributes;
+          return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  wrapper = this._wrapper;
+                  _context.next = 3;
+                  return Promise.resolve();
 
-          if (isInitialized) {
-            syncInitialAttributes();
-          } else {
-            // async & unresolved
-            Component().then(function (resolved) {
-              if (resolved.__esModule || resolved[Symbol.toStringTag] === 'Module') {
-                resolved = resolved.default;
+                case 3:
+
+                  if (!wrapper._isMounted) {
+                    // initialize attributes
+                    syncInitialAttributes = function syncInitialAttributes() {
+                      wrapper.props = getInitialProps(camelizedPropsList);
+                      hyphenatedPropsList.forEach(function (key) {
+                        syncAttribute(_this4, key);
+                      });
+                    };
+
+                    if (isInitialized) {
+                      syncInitialAttributes();
+                    } else {
+                      // async & unresolved
+                      Component().then(function (resolved) {
+                        if (resolved.__esModule || resolved[Symbol.toStringTag] === 'Module') {
+                          resolved = resolved.default;
+                        }
+                        initialize(resolved);
+                        syncInitialAttributes();
+                      });
+                    }
+                    // initialize children
+                    wrapper.slotChildren = Object.freeze(toVNodes(wrapper.$createElement, this.childNodes));
+                    wrapper.$mount();
+                    this.shadowRoot.appendChild(wrapper.$el);
+                  } else {
+                    callHooks(this.vueComponent, 'activated');
+                  }
+
+                case 4:
+                case 'end':
+                  return _context.stop();
               }
-              initialize(resolved);
-              syncInitialAttributes();
-            });
-          }
-          // initialize children
-          wrapper.slotChildren = Object.freeze(toVNodes(wrapper.$createElement, this.childNodes));
-          wrapper.$mount();
-          this.shadowRoot.appendChild(wrapper.$el);
-        } else {
-          callHooks(this.vueComponent, 'activated');
+            }
+          }, _callee, this);
+        }));
+
+        function connectedCallback() {
+          return _ref.apply(this, arguments);
         }
-      }
+
+        return connectedCallback;
+      }()
     }, {
       key: 'disconnectedCallback',
       value: function disconnectedCallback() {
