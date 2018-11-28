@@ -1,5 +1,5 @@
 {
-  "name": "@verticalone/vue-web-component-wrapper",
+  "name": "@updater/vue-web-component-wrapper",
   "version": "1.0.2",
   "description": "Wrap a Vue component as a web component.",
   "main": "dist/vue-wc-wrapper.js",
