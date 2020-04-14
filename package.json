@@ -36,6 +36,10 @@
     "lint-staged": "^6.1.0",
     "puppeteer": "^1.0.0",
     "rollup": "^0.55.3",
+    "babel-plugin-transform-builtin-classes": "^0.6.1",
+    "@babel/preset-env": "7.9.5",
+    "@babel/core": "7.9.0",
+    "rollup-plugin-babel": "^4.4.0",
     "typescript": "^3.2.2",
     "vue": "^2.5.13",
     "yorkie": "^1.0.3"

@@ -1,18 +1,222 @@
 var wrapVueWebComponent = (function () {
 'use strict';
 
+function _typeof(obj) {
+  "@babel/helpers - typeof";
+
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+  try {
+    var info = gen[key](arg);
+    var value = info.value;
+  } catch (error) {
+    reject(error);
+    return;
+  }
+
+  if (info.done) {
+    resolve(value);
+  } else {
+    Promise.resolve(value).then(_next, _throw);
+  }
+}
+
+function _asyncToGenerator(fn) {
+  return function () {
+    var self = this,
+        args = arguments;
+    return new Promise(function (resolve, reject) {
+      var gen = fn.apply(self, args);
+
+      function _next(value) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+      }
+
+      function _throw(err) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+      }
+
+      _next(undefined);
+    });
+  };
+}
+
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+function _inherits(subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function");
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) _setPrototypeOf(subClass, superClass);
+}
+
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _construct(Parent, args, Class) {
+  if (_isNativeReflectConstruct()) {
+    _construct = Reflect.construct;
+  } else {
+    _construct = function _construct(Parent, args, Class) {
+      var a = [null];
+      a.push.apply(a, args);
+      var Constructor = Function.bind.apply(Parent, a);
+      var instance = new Constructor();
+      if (Class) _setPrototypeOf(instance, Class.prototype);
+      return instance;
+    };
+  }
+
+  return _construct.apply(null, arguments);
+}
+
+function _isNativeFunction(fn) {
+  return Function.toString.call(fn).indexOf("[native code]") !== -1;
+}
+
+function _wrapNativeSuper(Class) {
+  var _cache = typeof Map === "function" ? new Map() : undefined;
+
+  _wrapNativeSuper = function _wrapNativeSuper(Class) {
+    if (Class === null || !_isNativeFunction(Class)) return Class;
+
+    if (typeof Class !== "function") {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    if (typeof _cache !== "undefined") {
+      if (_cache.has(Class)) return _cache.get(Class);
+
+      _cache.set(Class, Wrapper);
+    }
+
+    function Wrapper() {
+      return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+    }
+
+    Wrapper.prototype = Object.create(Class.prototype, {
+      constructor: {
+        value: Wrapper,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    return _setPrototypeOf(Wrapper, Class);
+  };
+
+  return _wrapNativeSuper(Class);
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
+function _possibleConstructorReturn(self, call) {
+  if (call && (typeof call === "object" || typeof call === "function")) {
+    return call;
+  }
+
+  return _assertThisInitialized(self);
+}
+
+function _createSuper(Derived) {
+  return function () {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (_isNativeReflectConstruct()) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
+}
+
 var camelizeRE = /-(\w)/g;
 var camelize = function camelize(str) {
   return str.replace(camelizeRE, function (_, c) {
     return c ? c.toUpperCase() : '';
   });
 };
-
 var hyphenateRE = /\B([A-Z])/g;
 var hyphenate = function hyphenate(str) {
   return str.replace(hyphenateRE, '-$1').toLowerCase();
 };
-
 function getInitialProps(propsList) {
   var res = {};
   propsList.forEach(function (key) {
@@ -20,12 +224,10 @@ function getInitialProps(propsList) {
   });
   return res;
 }
-
 function injectHook(options, key, hook) {
   options[key] = [].concat(options[key] || []);
   options[key].unshift(hook);
 }
-
 function callHooks(vm, hook) {
   if (vm) {
     var hooks = vm.$options[hook] || [];
@@ -34,7 +236,6 @@ function callHooks(vm, hook) {
     });
   }
 }
-
 function createCustomEvent(name, args) {
   return new CustomEvent(name, {
     bubbles: false,
@@ -44,12 +245,11 @@ function createCustomEvent(name, args) {
 }
 
 var isBoolean = function isBoolean(val) {
-  return (/function Boolean/.test(String(val))
-  );
+  return /function Boolean/.test(String(val));
 };
+
 var isNumber = function isNumber(val) {
-  return (/function Number/.test(String(val))
-  );
+  return /function Number/.test(String(val));
 };
 
 function convertAttributeValue(value, name) {
@@ -60,9 +260,11 @@ function convertAttributeValue(value, name) {
     if (value === 'true' || value === 'false') {
       return value === 'true';
     }
+
     if (value === '' || value === name) {
       return true;
     }
+
     return value != null;
   } else if (isNumber(type)) {
     var parsed = parseFloat(value, 10);
@@ -71,12 +273,13 @@ function convertAttributeValue(value, name) {
     return value;
   }
 }
-
 function toVNodes(h, children) {
   var res = [];
+
   for (var i = 0, l = children.length; i < l; i++) {
     res.push(toVNode(h, children[i]));
   }
+
   return res;
 }
 
@@ -90,10 +293,12 @@ function toVNode(h, node) {
         innerHTML: node.innerHTML
       }
     };
+
     if (data.attrs.slot) {
       data.slot = data.attrs.slot;
       delete data.attrs.slot;
     }
+
     return h(node.tagName, data);
   } else {
     return null;
@@ -102,24 +307,14 @@ function toVNode(h, node) {
 
 function getAttributes(node) {
   var res = {};
+
   for (var i = 0, l = node.attributes.length; i < l; i++) {
     var attr = node.attributes[i];
     res[attr.nodeName] = attr.nodeValue;
   }
+
   return res;
 }
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _fixBabelExtend = function (O) {
   var gPO = O.getPrototypeOf || function (o) {
@@ -129,7 +324,7 @@ var _fixBabelExtend = function (O) {
     o.__proto__ = p;
     return o;
   },
-      construct = (typeof Reflect === 'undefined' ? 'undefined' : _typeof(Reflect)) === 'object' ? Reflect.construct : function (Parent, args, Class) {
+      construct = (typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === 'object' ? Reflect.construct : function (Parent, args, Class) {
     var Constructor,
         a = [null];
     a.push.apply(a, args);
@@ -148,16 +343,14 @@ var _fixBabelExtend = function (O) {
 function wrap(Vue, Component) {
   var isAsync = typeof Component === 'function' && !Component.cid;
   var isInitialized = false;
-  var hyphenatedPropsList = void 0;
-  var camelizedPropsList = void 0;
-  var camelizedPropsMap = void 0;
+  var hyphenatedPropsList;
+  var camelizedPropsList;
+  var camelizedPropsMap;
 
   function initialize(Component) {
     if (isInitialized) return;
+    var options = typeof Component === 'function' ? Component.options : Component; // extract props info
 
-    var options = typeof Component === 'function' ? Component.options : Component;
-
-    // extract props info
     var propsList = Array.isArray(options.props) ? options.props : Object.keys(options.props || {});
     hyphenatedPropsList = propsList.map(hyphenate);
     camelizedPropsList = propsList.map(camelize);
@@ -165,23 +358,23 @@ function wrap(Vue, Component) {
     camelizedPropsMap = camelizedPropsList.reduce(function (map, key, i) {
       map[key] = originalPropsAsObject[propsList[i]];
       return map;
-    }, {});
+    }, {}); // proxy $emit to native DOM events
 
-    // proxy $emit to native DOM events
     injectHook(options, 'beforeCreate', function () {
       var _this = this;
 
       var emit = this.$emit;
+
       this.$emit = function (name) {
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
           args[_key - 1] = arguments[_key];
         }
 
         _this.$root.$options.customElement.dispatchEvent(createCustomEvent(name, args));
+
         return emit.call.apply(emit, [_this, name].concat(args));
       };
     });
-
     injectHook(options, 'created', function () {
       var _this2 = this;
 
@@ -189,9 +382,8 @@ function wrap(Vue, Component) {
       camelizedPropsList.forEach(function (key) {
         _this2.$root.props[key] = _this2[key];
       });
-    });
+    }); // proxy props as Element properties
 
-    // proxy props as Element properties
     camelizedPropsList.forEach(function (key) {
       Object.defineProperty(CustomElement.prototype, key, {
         get: function get() {
@@ -200,12 +392,10 @@ function wrap(Vue, Component) {
         set: function set(newVal) {
           this._wrapper.props[key] = newVal;
         },
-
         enumerable: false,
         configurable: true
       });
     });
-
     isInitialized = true;
   }
 
@@ -215,20 +405,25 @@ function wrap(Vue, Component) {
     el._wrapper.props[camelized] = convertAttributeValue(value, key, camelizedPropsMap[camelized]);
   }
 
-  var CustomElement = _fixBabelExtend(function (_HTMLElement) {
+  var CustomElement = _fixBabelExtend( /*#__PURE__*/function (_HTMLElement) {
     _inherits(CustomElement, _HTMLElement);
 
+    var _super = _createSuper(CustomElement);
+
     function CustomElement() {
+      var _this3;
+
       _classCallCheck(this, CustomElement);
 
-      var _this3 = _possibleConstructorReturn(this, (CustomElement.__proto__ || Object.getPrototypeOf(CustomElement)).call(this));
+      var self = _this3 = _super.call(this);
 
-      _this3.attachShadow({ mode: 'open' });
-
-      var wrapper = _this3._wrapper = new Vue({
+      self.attachShadow({
+        mode: 'open'
+      });
+      var wrapper = self._wrapper = new Vue({
         name: 'shadow-root',
-        customElement: _this3,
-        shadowRoot: _this3.shadowRoot,
+        customElement: self,
+        shadowRoot: self.shadowRoot,
         data: function data() {
           return {
             props: {},
@@ -241,24 +436,26 @@ function wrap(Vue, Component) {
             props: this.props
           }, this.slotChildren);
         }
-      });
+      }); // Use MutationObserver to react to future attribute & slot content change
 
-      // Use MutationObserver to react to future attribute & slot content change
       var observer = new MutationObserver(function (mutations) {
         var hasChildrenChange = false;
+
         for (var i = 0; i < mutations.length; i++) {
           var m = mutations[i];
-          if (isInitialized && m.type === 'attributes' && m.target === _this3) {
-            syncAttribute(_this3, m.attributeName);
+
+          if (isInitialized && m.type === 'attributes' && m.target === self) {
+            syncAttribute(self, m.attributeName);
           } else {
             hasChildrenChange = true;
           }
         }
+
         if (hasChildrenChange) {
-          wrapper.slotChildren = Object.freeze(toVNodes(wrapper.$createElement, _this3.childNodes));
+          wrapper.slotChildren = Object.freeze(toVNodes(wrapper.$createElement, self.childNodes));
         }
       });
-      observer.observe(_this3, {
+      observer.observe(self, {
         childList: true,
         subtree: true,
         characterData: true,
@@ -268,9 +465,9 @@ function wrap(Vue, Component) {
     }
 
     _createClass(CustomElement, [{
-      key: 'connectedCallback',
+      key: "connectedCallback",
       value: function () {
-        var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var _connectedCallback = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
           var _this4 = this;
 
           var wrapper, syncInitialAttributes;
@@ -278,12 +475,15 @@ function wrap(Vue, Component) {
             while (1) {
               switch (_context.prev = _context.next) {
                 case 0:
-                  wrapper = this._wrapper;
+                  wrapper = this._wrapper; // TODO: Vue's router will be instantiated immediately, before the router
+                  // in `mover-app` has finished transitioning URLs, making the Vue router
+                  // resolve the wrong URL. Wait one micro-task to allow `mover-app`'s
+                  // router to finish transitioning.
+
                   _context.next = 3;
                   return Promise.resolve();
 
                 case 3:
-
                   if (!wrapper._isMounted) {
                     // initialize attributes
                     syncInitialAttributes = function syncInitialAttributes() {
@@ -301,11 +501,13 @@ function wrap(Vue, Component) {
                         if (resolved.__esModule || resolved[Symbol.toStringTag] === 'Module') {
                           resolved = resolved.default;
                         }
+
                         initialize(resolved);
                         syncInitialAttributes();
                       });
-                    }
-                    // initialize children
+                    } // initialize children
+
+
                     wrapper.slotChildren = Object.freeze(toVNodes(wrapper.$createElement, this.childNodes));
                     wrapper.$mount();
                     this.shadowRoot.appendChild(wrapper.$el);
@@ -314,7 +516,7 @@ function wrap(Vue, Component) {
                   }
 
                 case 4:
-                case 'end':
+                case "end":
                   return _context.stop();
               }
             }
@@ -322,25 +524,25 @@ function wrap(Vue, Component) {
         }));
 
         function connectedCallback() {
-          return _ref.apply(this, arguments);
+          return _connectedCallback.apply(this, arguments);
         }
 
         return connectedCallback;
       }()
     }, {
-      key: 'disconnectedCallback',
+      key: "disconnectedCallback",
       value: function disconnectedCallback() {
         callHooks(this.vueComponent, 'deactivated');
       }
     }, {
-      key: 'vueComponent',
+      key: "vueComponent",
       get: function get() {
         return this._wrapper.$refs.inner;
       }
     }]);
 
     return CustomElement;
-  }(HTMLElement));
+  }( /*#__PURE__*/_wrapNativeSuper(HTMLElement)));
 
   if (!isAsync) {
     initialize(Component);
