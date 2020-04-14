@@ -1,7 +1,7 @@
 {
-  "name": "@verticalone/vue-web-component-wrapper",
-  "version": "1.0.2",
-  "description": "Wrap a Vue component as a web component.",
+  "name": "wbern-web-component-wrapper",
+  "version": "1.2.0",
+  "description": "wrap a vue component as a web component, for IE 11 too.",
   "main": "dist/vue-wc-wrapper.js",
   "unpkg": "dist/vue-wc-wrapper.global.js",
   "files": [
@@ -14,20 +14,21 @@
     "prepare": "rollup -c",
     "test:types": "tsc -p ./types/tsconfig.json"
   },
-  "repository": "https://github.com/VerticalOne/vue-web-component-wrapper",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wbern/vue-web-component-wrapper.git"
+  },
   "keywords": [
     "vue",
     "web-component"
   ],
-  "author": "Galen Warren",
+  "author": "William Bernting",
   "license": "MIT",
-  "publishConfig": {
-    "access": "restricted"
+  "bugs": {
+    "url": "https://github.com/wbern/vue-web-component-wrapper/issues"
   },
+  "homepage": "https://github.com/wbern/vue-web-component-wrapper#readme",
   "devDependencies": {
-    "babel-core": "^6.22.1",
-    "babel-plugin-transform-builtin-classes": "^0.6.1",
-    "babel-preset-env": "^1.6.1",
     "eslint": "^4.16.0",
     "eslint-plugin-vue-libs": "^2.1.0",
     "http-server": "^0.11.1",
@@ -53,10 +54,5 @@
       "eslint --fix",
       "git add"
     ]
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 10"
-  ]
+  }
 }
