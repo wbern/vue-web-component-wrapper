@@ -9,19 +9,18 @@ import {
   convertAttributeValue
 } from './utils.js'
 
-export default function wrap (Vue, Component) {
+export default function wrap(Vue, Component) {
   const isAsync = typeof Component === 'function' && !Component.cid
   let isInitialized = false
   let hyphenatedPropsList
   let camelizedPropsList
   let camelizedPropsMap
 
-  function initialize (Component) {
+  function initialize(Component) {
     if (isInitialized) return
 
-    const options = typeof Component === 'function'
-      ? Component.options
-      : Component
+    const options =
+      typeof Component === 'function' ? Component.options : Component
 
     // extract props info
     const propsList = Array.isArray(options.props)
@@ -29,7 +28,9 @@ export default function wrap (Vue, Component) {
       : Object.keys(options.props || {})
     hyphenatedPropsList = propsList.map(hyphenate)
     camelizedPropsList = propsList.map(camelize)
-    const originalPropsAsObject = Array.isArray(options.props) ? {} : options.props || {}
+    const originalPropsAsObject = Array.isArray(options.props)
+      ? {}
+      : options.props || {}
     camelizedPropsMap = camelizedPropsList.reduce((map, key, i) => {
       map[key] = originalPropsAsObject[propsList[i]]
       return map
@@ -39,25 +40,27 @@ export default function wrap (Vue, Component) {
     injectHook(options, 'beforeCreate', function () {
       const emit = this.$emit
       this.$emit = (name, ...args) => {
-        this.$root.$options.customElement.dispatchEvent(createCustomEvent(name, args))
+        this.$root.$options.customElement.dispatchEvent(
+          createCustomEvent(name, args)
+        )
         return emit.call(this, name, ...args)
       }
     })
 
     injectHook(options, 'created', function () {
       // sync default props values to wrapper on created
-      camelizedPropsList.forEach(key => {
+      camelizedPropsList.forEach((key) => {
         this.$root.props[key] = this[key]
       })
     })
 
     // proxy props as Element properties
-    camelizedPropsList.forEach(key => {
+    camelizedPropsList.forEach((key) => {
       Object.defineProperty(CustomElement.prototype, key, {
-        get () {
+        get() {
           return this._wrapper.props[key]
         },
-        set (newVal) {
+        set(newVal) {
           this._wrapper.props[key] = newVal
         },
         enumerable: false,
@@ -68,7 +71,7 @@ export default function wrap (Vue, Component) {
     isInitialized = true
   }
 
-  function syncAttribute (el, key) {
+  function syncAttribute(el, key) {
     const camelized = camelize(key)
     const value = el.hasAttribute(key) ? el.getAttribute(key) : undefined
     el._wrapper.props[camelized] = convertAttributeValue(
@@ -79,30 +82,34 @@ export default function wrap (Vue, Component) {
   }
 
   class CustomElement extends HTMLElement {
-    constructor () {
+    constructor() {
       const self = super()
       self.attachShadow({ mode: 'open' })
 
-      const wrapper = self._wrapper = new Vue({
+      const wrapper = (self._wrapper = new Vue({
         name: 'shadow-root',
         customElement: self,
         shadowRoot: self.shadowRoot,
-        data () {
+        data() {
           return {
             props: {},
             slotChildren: []
           }
         },
-        render (h) {
-          return h(Component, {
-            ref: 'inner',
-            props: this.props
-          }, this.slotChildren)
+        render(h) {
+          return h(
+            Component,
+            {
+              ref: 'inner',
+              props: this.props
+            },
+            this.slotChildren
+          )
         }
-      })
+      }))
 
       // Use MutationObserver to react to future attribute & slot content change
-      const observer = new MutationObserver(mutations => {
+      const observer = new MutationObserver((mutations) => {
         let hasChildrenChange = false
         for (let i = 0; i < mutations.length; i++) {
           const m = mutations[i]
@@ -113,10 +120,9 @@ export default function wrap (Vue, Component) {
           }
         }
         if (hasChildrenChange) {
-          wrapper.slotChildren = Object.freeze(toVNodes(
-            wrapper.$createElement,
-            self.childNodes
-          ))
+          wrapper.slotChildren = Object.freeze(
+            toVNodes(wrapper.$createElement, self.childNodes)
+          )
         }
       })
       observer.observe(self, {
@@ -127,11 +133,11 @@ export default function wrap (Vue, Component) {
       })
     }
 
-    get vueComponent () {
+    get vueComponent() {
       return this._wrapper.$refs.inner
     }
 
-    async connectedCallback () {
+    async connectedCallback() {
       const wrapper = this._wrapper
 
       // TODO: Vue's router will be instantiated immediately, before the router
@@ -144,7 +150,7 @@ export default function wrap (Vue, Component) {
         // initialize attributes
         const syncInitialAttributes = () => {
           wrapper.props = getInitialProps(camelizedPropsList)
-          hyphenatedPropsList.forEach(key => {
+          hyphenatedPropsList.forEach((key) => {
             syncAttribute(this, key)
           })
         }
@@ -153,8 +159,11 @@ export default function wrap (Vue, Component) {
           syncInitialAttributes()
         } else {
           // async & unresolved
-          Component().then(resolved => {
-            if (resolved.__esModule || resolved[Symbol.toStringTag] === 'Module') {
+          Component().then((resolved) => {
+            if (
+              resolved.__esModule ||
+              resolved[Symbol.toStringTag] === 'Module'
+            ) {
               resolved = resolved.default
             }
             initialize(resolved)
@@ -162,10 +171,9 @@ export default function wrap (Vue, Component) {
           })
         }
         // initialize children
-        wrapper.slotChildren = Object.freeze(toVNodes(
-          wrapper.$createElement,
-          this.childNodes
-        ))
+        wrapper.slotChildren = Object.freeze(
+          toVNodes(wrapper.$createElement, this.childNodes)
+        )
         wrapper.$mount()
         this.shadowRoot.appendChild(wrapper.$el)
       } else {
@@ -173,7 +181,7 @@ export default function wrap (Vue, Component) {
       }
     }
 
-    disconnectedCallback () {
+    disconnectedCallback() {
       callHooks(this.vueComponent, 'deactivated')
     }
   }
