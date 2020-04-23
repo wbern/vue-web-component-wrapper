@@ -427,7 +427,9 @@ function wrap(Vue, Component) {
         data: function data() {
           return {
             props: {},
-            slotChildren: []
+            slotChildren: [],
+            ShadyDOMSlotsHack_slotsPassedToWrapper: false,
+            ShadyDOMSlotsHack_deregisterSetIntervalListener: null
           };
         },
         render: function render(h) {
@@ -436,7 +438,88 @@ function wrap(Vue, Component) {
             props: this.props
           }, this.slotChildren);
         }
-      }); // Use MutationObserver to react to future attribute & slot content change
+      });
+
+      if (window.ShadyDOM) {
+        // MutationObserver does not work inside shadowRoot when polyfilled with ShadyDOM
+        // this makes slot changes go unrecognized by our usage of MutationObserver
+        // https://github.com/webcomponents/polyfills/issues/81
+        // ShadyDOM has a function called ShadyDOM.childrenObserver but it doesn't do the job very thoroughly, as it
+        // cannot recognize changes in slots when the slot count hasn't changed, and seemingly doesn't recognized removal of elements (https://github.com/webcomponents/polyfills/issues/82)
+        // .. what it can do for us however, is to observe whether slots are ever added.
+        // once a slot is added, we'll apply the hack to this wrapper.
+        // if slots are never used, we're saving ourselves some performance cost.
+        window.ShadyDOM.observeChildren(_assertThisInitialized(_this3), function () {
+          if (!wrapper.ShadyDOMSlotsHack_slotsPassedToWrapper) {
+            wrapper.ShadyDOMSlotsHack_slotsPassedToWrapper = true;
+          }
+        }); // Here is the ugly fix to work around the core issue, basically setInterval, but shared across all vue wc wrappers for performance
+        // we preserve the original MutationObserver code further down, because it observes all other changes for us.
+
+        window.ShadyDOMSlotsHack_setInterval = window.ShadyDOMSlotsHack_setInterval || // eslint-disable-next-line no-extra-parens
+        new function () {
+          var _this4 = this;
+
+          this.listeners = [];
+
+          this.add = function (handler) {
+            var id = Math.floor(Math.random() * 1000000);
+
+            _this4.listeners.push({
+              handler: handler,
+              id: id
+            });
+
+            if (_this4.listeners.length === 1) {
+              // first entry added, start setInterval
+              _this4.start();
+            }
+
+            return id;
+          };
+
+          this.remove = function (idToRemove) {
+            _this4.listeners.splice(_this4.listeners.findIndex(function (_ref) {
+              var id = _ref.id;
+              return id === idToRemove;
+            }), 1);
+
+            if (_this4.listeners.length === 0) {
+              // no entries left, stop setInterval
+              _this4.stop();
+            }
+          };
+
+          this.start = function () {
+            if (_this4.intervalId === undefined || _this4.intervalId === null) {
+              _this4.intervalId = window.setInterval(function () {
+                _this4.listeners.forEach(function (_ref2) {
+                  var handler = _ref2.handler;
+                  return handler();
+                });
+              }, 100);
+            }
+          };
+
+          this.stop = function () {
+            if (_this4.intervalId) {
+              window.clearInterval(_this4.intervalId);
+              _this4.intervalId = null;
+            }
+          };
+        }();
+        var id = window.ShadyDOMSlotsHack_setInterval.add(function () {
+          if (wrapper.ShadyDOMSlotsHack_slotsPassedToWrapper) {
+            // slots were added to the wrapper at some point, so update children at every interval
+            _this3.updateSlotChildren();
+          }
+        });
+
+        wrapper.ShadyDOMSlotsHack_deregisterSetIntervalListener = function () {
+          return window.ShadyDOMSlotsHack_setInterval.remove(id);
+        };
+      } // Use MutationObserver to react to future attribute & slot content change
+
 
       var observer = new MutationObserver(function (mutations) {
         var hasChildrenChange = false;
@@ -452,7 +535,7 @@ function wrap(Vue, Component) {
         }
 
         if (hasChildrenChange) {
-          wrapper.slotChildren = Object.freeze(toVNodes(wrapper.$createElement, self.childNodes));
+          _this3.updateSlotChildren();
         }
       });
       observer.observe(self, {
@@ -465,10 +548,20 @@ function wrap(Vue, Component) {
     }
 
     _createClass(CustomElement, [{
+      key: "updateSlotChildren",
+      value: function updateSlotChildren() {
+        this._wrapper.slotChildren = Object.freeze(toVNodes(this._wrapper.$createElement, this.childNodes));
+
+        if (this._wrapper.slotChildren.length === 0) {
+          // no slots present, revert the shadyDOM hack (if present)
+          this._wrapper.ShadyDOMSlotsHack_slotsPassedToWrapper = false;
+        }
+      }
+    }, {
       key: "connectedCallback",
       value: function () {
         var _connectedCallback = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-          var _this4 = this;
+          var _this5 = this;
 
           var wrapper, syncInitialAttributes;
           return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -489,7 +582,7 @@ function wrap(Vue, Component) {
                     syncInitialAttributes = function syncInitialAttributes() {
                       wrapper.props = getInitialProps(camelizedPropsList);
                       hyphenatedPropsList.forEach(function (key) {
-                        syncAttribute(_this4, key);
+                        syncAttribute(_this5, key);
                       });
                     };
 
@@ -508,7 +601,7 @@ function wrap(Vue, Component) {
                     } // initialize children
 
 
-                    wrapper.slotChildren = Object.freeze(toVNodes(wrapper.$createElement, this.childNodes));
+                    this.updateSlotChildren();
                     wrapper.$mount();
                     this.shadowRoot.appendChild(wrapper.$el);
                   } else {
@@ -532,6 +625,10 @@ function wrap(Vue, Component) {
     }, {
       key: "disconnectedCallback",
       value: function disconnectedCallback() {
+        if (this._wrapper && this._wrapper.ShadyDOMSlotsHack_deregisterSetIntervalListener) {
+          this._wrapper.ShadyDOMSlotsHack_deregisterSetIntervalListener();
+        }
+
         callHooks(this.vueComponent, 'deactivated');
       }
     }, {
