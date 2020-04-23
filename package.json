@@ -48,7 +48,10 @@
     "env": {
       "browser": true
     },
-    "extends": "plugin:vue-libs/recommended"
+    "extends": "plugin:vue-libs/recommended",
+    "rules": {
+      "space-before-function-paren": "off"
+    }
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
